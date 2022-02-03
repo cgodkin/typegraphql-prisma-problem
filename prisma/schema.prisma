@@ -1,0 +1,1354 @@
+datasource db {
+  provider = "sqlserver"
+  url      = "sqlserver://localhost;database=Prisma1_DB7;integratedSecurity=true;trustServerCertificate=true;"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator typegraphql {
+  provider           = "typegraphql-prisma"
+  output             = "../prisma/generated/type-graphql"
+  emitTranspiledCode = false
+}
+
+model acr_additional {
+  operator_id       String?   @db.VarChar(80)
+  field_id          String?   @db.VarChar(80)
+  acrule_id         String    @db.VarChar(80)
+  id_for_uniqueness Int       @id(map: "PK__acr_addi__F064ED4973FEF170") @default(autoincrement())
+  acrule            acrule    @relation(fields: [acrule_id], references: [acrule_id], onUpdate: NoAction, map: "FK_acrule_id")
+  field             field?    @relation(fields: [field_id], references: [field_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_field_id")
+  operator          operator? @relation(fields: [operator_id], references: [operator_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_operator_id")
+
+  @@unique([operator_id, field_id, acrule_id], map: "acr_additional_unique")
+}
+
+model acr_compound {
+  parent_acrule_id                             String @db.VarChar(80)
+  acrule_id                                    String @db.VarChar(80)
+  acrule_acr_compound_acrule_idToacrule        acrule @relation("acr_compound_acrule_idToacrule", fields: [acrule_id], references: [acrule_id], onUpdate: NoAction, map: "FK_compound_acrule_id")
+  acrule_acr_compound_parent_acrule_idToacrule acrule @relation("acr_compound_parent_acrule_idToacrule", fields: [parent_acrule_id], references: [acrule_id], onUpdate: NoAction, map: "FK_parent_acrule_id")
+
+  @@id([parent_acrule_id, acrule_id], map: "Pk_acr_compound")
+}
+
+model acrule {
+  acrule_id                                                       String               @id(map: "PK__acrule__A42A83BEE099B1E5") @db.VarChar(80)
+  name                                                            String               @db.VarChar(200)
+  description                                                     String?              @db.VarChar(255)
+  type                                                            String               @db.Char(1)
+  limit                                                           Float?
+  plane                                                           String               @db.Char(1)
+  casing_yn                                                       String               @db.Char(1)
+  surface_uncertain_yn                                            String               @db.Char(1)
+  ellipse_sd                                                      Float?
+  hole_casing_calc                                                String?              @default("N", map: "DF__acrule__hole_cas__4E88ABD4") @db.Char(1)
+  cone_calc                                                       String?              @db.Char(1)
+  intersect_casing                                                String?              @db.Char(1)
+  ellipse_orient                                                  String?              @db.Char(1)
+  created_by                                                      String?              @db.VarChar(80)
+  created_date                                                    DateTime?            @db.DateTime
+  system_yn                                                       String               @db.Char(1)
+  default_rule                                                    String?              @db.Char(1)
+  cone_percent_ref_md                                             Float?
+  cone_percent_ref_md_cap                                         Float?
+  cone_percent_offset_md                                          Float?
+  cone_percent_offset_md_cap                                      Float?
+  error_sum_method                                                String?              @default("S", map: "DF__acrule__error_su__5441852A") @db.Char(1)
+  surface_margin                                                  Float?
+  surface_margin_calc                                             String?              @default("N", map: "DF__acrule__surface___571DF1D5") @db.Char(1)
+  projection_uncertainty                                          Float?
+  purpose                                                         String               @default("H", map: "DF__acrule__purpose__5812160E") @db.Char(1)
+  warning_limit                                                   Float?
+  default_hole_diameter                                           Float?               @default(0.9144000, map: "DF__acrule__default___59FA5E80")
+  acr_short_name                                                  String?              @db.VarChar(80)
+  acr_additional                                                  acr_additional[]
+  acr_compound_acr_compound_acrule_idToacrule                     acr_compound[]       @relation("acr_compound_acrule_idToacrule")
+  acr_compound_acr_compound_parent_acrule_idToacrule              acr_compound[]       @relation("acr_compound_parent_acrule_idToacrule")
+  auto_clearance_log_acruleToauto_clearance_log_primary_acrule_id auto_clearance_log[] @relation("acruleToauto_clearance_log_primary_acrule_id")
+  auto_clearance_log_acruleToauto_clearance_log_second_acrule_id  auto_clearance_log[] @relation("acruleToauto_clearance_log_second_acrule_id")
+  field                                                           field[]
+  operator                                                        operator[]
+  site_defaults_acruleTosite_defaults_alternate_acrule_id         site_defaults[]      @relation("acruleTosite_defaults_alternate_acrule_id")
+  site_defaults_acruleTosite_defaults_default_acrule_id           site_defaults[]      @relation("acruleTosite_defaults_default_acrule_id")
+}
+
+model actual_survey_program {
+  actual_survey_program_id                                   String                   @id(map: "PK__actual_s__6484D3BFE818AB97") @db.VarChar(80)
+  name                                                       String                   @db.VarChar(160)
+  actual_wellbore_id                                         String?                  @db.VarChar(80)
+  plan_survey_program_id                                     String?                  @db.VarChar(80)
+  revision_of_program_id                                     String?                  @db.VarChar(80)
+  tie_type                                                   String                   @db.Char(1)
+  tie_slot_id                                                String?                  @db.VarChar(80)
+  tie_actual_survey_program_id                               String?                  @db.VarChar(80)
+  active_projection_id                                       String?                  @db.VarChar(80)
+  tie_elocal                                                 Float?
+  tie_nlocal                                                 Float?
+  tie_mdepth                                                 Float?
+  tie_vdepth                                                 Float?
+  tie_inclination                                            Float?
+  tie_azimuth                                                Float?
+  tie_comments                                               String?                  @db.VarChar(2000)
+  time_stamp                                                 DateTime?                @db.DateTime
+  updated_by                                                 String?                  @db.VarChar(80)
+  update_date                                                DateTime?                @db.DateTime
+  comments                                                   String?                  @db.VarChar(8000)
+  offset_well_list_id                                        String?                  @db.VarChar(80)
+  locked                                                     String?                  @db.Char(1)
+  bit_project_method                                         String?                  @default("N", map: "DF__actual_su__bit_p__5649C92D") @db.Char(1)
+  sensor_to_bit                                              Float?
+  bit_project_build                                          Float?
+  bit_project_turn                                           Float?
+  bit_project_dls                                            Float?
+  bit_project_tf                                             Float?
+  bit_project_inc                                            Float?
+  bit_project_az                                             Float?
+  proposal_AWP_active_projection_idToproposal                proposal?                @relation("AWP_active_projection_idToproposal", fields: [active_projection_id], references: [proposal_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_AWP_active_projection_id")
+  AWB_AWP_AWB_idToAWB                                        actual_wellbore?         @relation("AWP_AWB_idToAWB", fields: [actual_wellbore_id], references: [actual_wellbore_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_actual_wellbore_id")
+  offset_well_list_AWP_offset_well_list_idTooffset_well_list offset_well_list?        @relation("AWP_offset_well_list_idTooffset_well_list", fields: [offset_well_list_id], references: [offset_well_list_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_offset_well_list_id")
+  plan_survey_program                                        plan_survey_program?     @relation(fields: [plan_survey_program_id], references: [plan_survey_program_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_plan_survey_program_ID")
+  AWP_revision_id                                            actual_survey_program?   @relation("AWPtoAWP_revision_id", fields: [revision_of_program_id], references: [actual_survey_program_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_revision_of_program_ID")
+  AWP_AWPToAWP_tieAWP_id                                     actual_survey_program?   @relation("AWPToAWP_tieAWP_id", fields: [tie_actual_survey_program_id], references: [actual_survey_program_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_tie_actual_survey_program_id")
+  slot                                                       slot?                    @relation(fields: [tie_slot_id], references: [slot_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_AWP_tie_slot_id")
+  other_AWP_revision_id                                      actual_survey_program[]  @relation("AWPtoAWP_revision_id")
+  other_AWP_AWPToAWP_tieAWP_id                               actual_survey_program[]  @relation("AWPToAWP_tieAWP_id")
+  actual_survey_section                                      actual_survey_section[]
+  actual_vs                                                  actual_vs?
+  AWB_AWPToAWB_def_AWP_id                                    actual_wellbore[]        @relation("AWPToAWB_def_AWP_id")
+  auto_clearance_log                                         auto_clearance_log[]
+  offset_well_list_AWPTooffset_well_list_AWP_id              offset_well_list[]       @relation("AWPTooffset_well_list_AWP_id")
+  offset_well_list_entry                                     offset_well_list_entry[]
+  proposal_AWPToproposal_tie_AWP_id                          proposal[]               @relation("AWPToproposal_tie_AWP_id")
+  wellpath_comment                                           wellpath_comment[]
+
+  @@unique([actual_survey_program_id, offset_well_list_id], map: "AWP_offsets_unique")
+}
+
+model actual_survey_section {
+  actual_survey_section_id String                 @id(map: "PK__actual_s__FC0F5A167F9DF0B4") @db.VarChar(80)
+  actual_survey_program_id String?                @db.VarChar(80)
+  survey_log_id            String?                @db.VarChar(80)
+  top_md                   Float?
+  base_md                  Float?
+  comments                 String?                @db.VarChar(80)
+  AWP                      actual_survey_program? @relation(fields: [actual_survey_program_id], references: [actual_survey_program_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_ASS_actual_survey_program_id")
+  survey_log               survey_log?            @relation(fields: [survey_log_id], references: [survey_log_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_ASS_survey_log_id")
+}
+
+model actual_vs {
+  type                     String                @db.Char(1)
+  start_at                 String                @db.Char(1)
+  end_at                   String                @db.Char(1)
+  start_elocal             Float?
+  start_nlocal             Float?
+  end_elocal               Float?
+  end_nlocal               Float?
+  azimuth                  Float?
+  based_on_proposal_id     String?               @db.VarChar(80)
+  actual_survey_program_id String                @unique(map: "UQ__actual_v__6484D3BE57FAB7C1") @db.VarChar(80)
+  updated_by               String?               @db.VarChar(80)
+  update_date              DateTime?             @db.DateTime
+  comments                 String?               @db.VarChar(2000)
+  AWP                      actual_survey_program @relation(fields: [actual_survey_program_id], references: [actual_survey_program_id], onUpdate: NoAction, map: "FK_AVS_actual_survey_program_id")
+  proposal                 proposal?             @relation(fields: [based_on_proposal_id], references: [proposal_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_AVS_based_on_proposal_id")
+}
+
+model actual_wellbore {
+  actual_wellbore_id                           String                  @id(map: "PK__actual_w__1DCED4A6205DEBC8") @db.VarChar(80)
+  name                                         String                  @db.VarChar(160)
+  well_header_id                               String?                 @db.VarChar(80)
+  def_actual_srvy_program_id                   String?                 @db.VarChar(80)
+  tie_type                                     String                  @db.Char(1)
+  tie_slot_id                                  String?                 @db.VarChar(80)
+  tie_actual_wellbore_id                       String?                 @db.VarChar(80)
+  tie_mdepth                                   Float?
+  tie_vdepth                                   Float?
+  tie_inclination                              Float?
+  tie_azimuth                                  Float?
+  tie_elocal                                   Float?
+  tie_nlocal                                   Float?
+  well_status                                  String?                 @db.Char(1)
+  start_date                                   DateTime?               @db.DateTime
+  end_date                                     DateTime?               @db.DateTime
+  updated_by                                   String?                 @db.VarChar(80)
+  update_date                                  DateTime?               @db.DateTime
+  comments                                     String?                 @db.VarChar(8000)
+  faces_file_name                              String?                 @db.VarChar(1000)
+  sequence_file_name                           String?                 @db.VarChar(1000)
+  model_elv_above_msl                          Float?
+  fulfills_id                                  String?                 @db.VarChar(80)
+  schematic_faces_file_name                    String?                 @db.VarChar(2000)
+  locked                                       String?                 @db.Char(1)
+  AWP_AWPToAWB_def_AWP_id                      actual_survey_program?  @relation("AWPToAWB_def_AWP_id", fields: [def_actual_srvy_program_id], references: [actual_survey_program_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_AWB_def_actual_srvy_program_id")
+  plan_wellbore_AWB_fulfills_idToplan_wellbore plan_wellbore?          @relation("AWB_fulfills_idToplan_wellbore", fields: [fulfills_id], references: [plan_wellbore_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_fulfills_id")
+  AWB                                          actual_wellbore?        @relation("AWBToAWB_tie_AWB_id", fields: [tie_actual_wellbore_id], references: [actual_wellbore_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_tie_actual_wellbore_id")
+  slot                                         slot?                   @relation(fields: [tie_slot_id], references: [slot_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_AWB_tie_slot_id")
+  well_header                                  well_header?            @relation(fields: [well_header_id], references: [well_header_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Well_Header_ID")
+  AWP_AWP_AWB_idToAWB                          actual_survey_program[] @relation("AWP_AWB_idToAWB")
+  other_AWB                                    actual_wellbore[]       @relation("AWBToAWB_tie_AWB_id")
+  casing                                       casing[]
+  formation_tops                               formation_tops[]
+  plan_wellbore_AWBToplan_wellbore_tie_AWB_id  plan_wellbore[]         @relation("AWBToplan_wellbore_tie_AWB_id")
+  survey_log                                   survey_log[]
+}
+
+model assigned_correction {
+  correction_type_id String?          @db.VarChar(80)
+  tool_model_id      String?          @db.VarChar(80)
+  id_for_uniqueness  Int              @id(map: "PK__assigned__F064ED49DDFC0F1F") @default(autoincrement())
+  correction_type    correction_type? @relation(fields: [correction_type_id], references: [correction_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_AC_Correction_Type_ID")
+  tool_model         tool_model?      @relation(fields: [tool_model_id], references: [tool_model_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_AC_Tool_Model_ID")
+
+  @@unique([correction_type_id, tool_model_id], map: "assigned_correction_unique")
+}
+
+model auto_clearance_log {
+  auto_clearance_log_id                                                       String                   @id(map: "PK__auto_cle__5193628F93D47960") @db.VarChar(80)
+  actual_survey_program_id                                                    String                   @db.VarChar(80)
+  time_calculation                                                            DateTime?                @db.DateTime
+  time_acknowledge                                                            DateTime?                @db.DateTime
+  td_tool_model_id                                                            String                   @db.VarChar(80)
+  run_by                                                                      String                   @db.VarChar(80)
+  software                                                                    String?                  @db.VarChar(80)
+  computer_name                                                               String?                  @db.VarChar(80)
+  action                                                                      String                   @db.Char(1)
+  to_bit_extrapolation_id                                                     String?                  @db.VarChar(80)
+  look_ahead_extrapolation_id                                                 String?                  @db.VarChar(80)
+  plan_name                                                                   String?                  @db.VarChar(330)
+  md_deepest_survey                                                           Float
+  distance_to_plan_deepest_survey                                             Float?
+  md_bit                                                                      Float?
+  distance_to_plan_bit                                                        Float?
+  md_lookahead                                                                Float?
+  distance_to_plan_lookahead                                                  Float?
+  primary_acrule_id                                                           String                   @db.VarChar(80)
+  second_acrule_id                                                            String?                  @db.VarChar(80)
+  offset_well_list_name                                                       String                   @db.VarChar(160)
+  include_offset_plans_yn                                                     String                   @db.Char(1)
+  notes_and_warnings                                                          String?                  @db.VarChar(5000)
+  AWP                                                                         actual_survey_program    @relation(fields: [actual_survey_program_id], references: [actual_survey_program_id], onUpdate: NoAction, map: "FK_ACL_actual_survey_program_id")
+  extrapolation_auto_clearance_log_look_ahead_extrapolation_idToextrapolation extrapolation?           @relation("auto_clearance_log_look_ahead_extrapolation_idToextrapolation", fields: [look_ahead_extrapolation_id], references: [extrapolation_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_look_ahead_extrapolation_id")
+  acrule_acruleToauto_clearance_log_primary_acrule_id                         acrule                   @relation("acruleToauto_clearance_log_primary_acrule_id", fields: [primary_acrule_id], references: [acrule_id], onUpdate: NoAction, map: "FK_primary_acrule_id")
+  acrule_acruleToauto_clearance_log_second_acrule_id                          acrule?                  @relation("acruleToauto_clearance_log_second_acrule_id", fields: [second_acrule_id], references: [acrule_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_second_acrule_id")
+  tool_model                                                                  tool_model               @relation(fields: [td_tool_model_id], references: [tool_model_id], onUpdate: NoAction, map: "FK_td_tool_model_id")
+  extrapolation_auto_clearance_log_to_bit_extrapolation_idToextrapolation     extrapolation?           @relation("auto_clearance_log_to_bit_extrapolation_idToextrapolation", fields: [to_bit_extrapolation_id], references: [extrapolation_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_to_bit_extrapolation_id")
+  auto_clearance_results                                                      auto_clearance_results[]
+}
+
+model auto_clearance_results {
+  auto_clearance_results_id String             @id(map: "PK__auto_cle__C5349C5F40686617") @db.VarChar(80)
+  auto_clearance_log_id     String             @db.VarChar(80)
+  actual_survey_program     String?            @db.VarChar(160)
+  proposal                  String?            @db.VarChar(160)
+  acrule_name               String             @db.VarChar(200)
+  acrule_value              Float?
+  type                      String             @db.Char(1)
+  status                    String             @db.Char(1)
+  available_space           Float?
+  depth_min_available_space Float?
+  show_warning              String             @db.Char(1)
+  auto_clearance_log        auto_clearance_log @relation(fields: [auto_clearance_log_id], references: [auto_clearance_log_id], onUpdate: NoAction, map: "FK_Auto_CR_auto_clearance_log_id")
+}
+
+model block {
+  block_id                String                @id(map: "PK__block__A67E647D4FBAE84C") @db.VarChar(80)
+  name                    String                @db.VarChar(100)
+  geographical_context_id String?               @db.VarChar(80)
+  comments                String?               @db.VarChar(2000)
+  geographical_context    geographical_context? @relation(fields: [geographical_context_id], references: [geographical_context_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_block_geographical_context_ID")
+  facility                facility[]
+}
+
+model bundle_data {
+  bundle_data_id                                           String             @id(map: "PK__bundle_d__474BD36FFDD32367") @db.VarChar(80)
+  name                                                     String             @db.VarChar(80)
+  database_name                                            String             @db.VarChar(80)
+  operator_id                                              String?            @db.VarChar(80)
+  field_id                                                 String?            @db.VarChar(80)
+  system_yn                                                String             @db.Char(1)
+  primary_bundle_yn                                        String?            @unique(map: "UQ__bundle_d__90F84D5C6D909363") @db.Char(1)
+  updated_by                                               String?            @db.VarChar(80)
+  update_date                                              DateTime?          @db.DateTime
+  comments                                                 String?            @db.VarChar(2000)
+  field_bundle_data_field_idTofield                        field?             @relation("bundle_data_field_idTofield", fields: [field_id], references: [field_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_BDL_Field_id")
+  operator_bundle_data_operator_idTooperator               operator?          @relation("bundle_data_operator_idTooperator", fields: [operator_id], references: [operator_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_BDL_operator_id")
+  bundled_template                                         bundled_template[]
+  field_bundle_dataTofield_primary_plan_bundle_id          field[]            @relation("bundle_dataTofield_primary_plan_bundle_id")
+  field_bundle_dataTofield_primary_rigsite_bundle_id       field[]            @relation("bundle_dataTofield_primary_rigsite_bundle_id")
+  operator_bundle_dataTooperator_primary_plan_bundle_id    operator[]         @relation("bundle_dataTooperator_primary_plan_bundle_id")
+  operator_bundle_dataTooperator_primary_rigsite_bundle_id operator[]         @relation("bundle_dataTooperator_primary_rigsite_bundle_id")
+}
+
+model bundled_template {
+  template_data_id  String        @db.VarChar(80)
+  bundle_data_id    String        @db.VarChar(80)
+  output_format     String?       @db.Char(1)
+  pdf_yn            String?       @db.Char(1)
+  id_for_uniqueness Int           @id(map: "PK__bundled___F064ED49930479AF") @default(autoincrement())
+  bundle_data       bundle_data   @relation(fields: [bundle_data_id], references: [bundle_data_id], onUpdate: NoAction, map: "DNF_FK_USED_bundle_data_id")
+  template_data     template_data @relation(fields: [template_data_id], references: [template_data_id], onUpdate: NoAction, map: "DNF_FK_USED_template_data_id")
+}
+
+model casing {
+  casing_type_id     String?          @db.VarChar(80)
+  actual_wellbore_id String?          @db.VarChar(80)
+  proposal_id        String?          @db.VarChar(80)
+  top_md             Float?
+  bottom_md          Float?
+  top_vd             Float?
+  bottom_vd          Float?
+  diameter           Float?
+  shoe_or_exit       String?          @db.Char(1)
+  sequence           Int
+  updated_by         String?          @db.VarChar(80)
+  update_date        DateTime?        @db.DateTime
+  comments           String?          @db.VarChar(2000)
+  id_for_uniqueness  Int              @id(map: "PK__casing__F064ED4980BA73B1") @default(autoincrement())
+  AWB                actual_wellbore? @relation(fields: [actual_wellbore_id], references: [actual_wellbore_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_casing_actual_wellbore_id")
+  casing_type        casing_type?     @relation(fields: [casing_type_id], references: [casing_type_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_casing_type_id")
+  proposal           proposal?        @relation(fields: [proposal_id], references: [proposal_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_casing_proposal_id")
+
+  @@unique([actual_wellbore_id, proposal_id, sequence], map: "casing_unique")
+}
+
+model casing_type {
+  casing_type_id String   @id(map: "PK__casing_t__E7C0414CD79DAC54") @db.VarChar(80)
+  type           String?  @db.VarChar(80)
+  comments       String?  @db.VarChar(80)
+  casing         casing[]
+}
+
+model cone_error_parameters {
+  tool_model_id     String?     @db.VarChar(80)
+  horiz_error       Float?
+  vert_error        Float?
+  inclination_limit Float?
+  id_for_uniqueness Int         @id(map: "PK__cone_err__F064ED49F10E23C0") @default(autoincrement())
+  tool_model        tool_model? @relation(fields: [tool_model_id], references: [tool_model_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_CEP_tool_model_id")
+}
+
+model correction_group {
+  correction_group_id String             @id(map: "PK__correcti__B0E19055D4321605") @db.VarChar(80)
+  name                String?            @db.VarChar(40)
+  description         String?            @db.VarChar(255)
+  app_corr_type       String?            @db.Char(1)
+  correction_type     correction_type[]
+  valid_correction    valid_correction[]
+}
+
+model correction_type {
+  correction_type_id                                                                            String                     @id(map: "PK__correcti__094412F6495AB454") @db.VarChar(80)
+  correction_group_id                                                                           String?                    @db.VarChar(80)
+  name                                                                                          String?                    @db.VarChar(40)
+  description                                                                                   String?                    @db.VarChar(255)
+  priority                                                                                      Float?
+  correction_group                                                                              correction_group?          @relation(fields: [correction_group_id], references: [correction_group_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_CT_Correction_Group_ID")
+  assigned_correction                                                                           assigned_correction[]
+  error_term_value                                                                              error_term_value[]
+  invalid_correction_combo_correction_typeToinvalid_correction_combo_correction_type_id         invalid_correction_combo[] @relation("correction_typeToinvalid_correction_combo_correction_type_id")
+  invalid_correction_combo_correction_typeToinvalid_correction_combo_invalid_correction_type_id invalid_correction_combo[] @relation("correction_typeToinvalid_correction_combo_invalid_correction_type_id")
+  tool_parameter_value                                                                          tool_parameter_value[]
+}
+
+model database_version {
+  version_number      String    @db.VarChar(20)
+  version_date        DateTime  @db.DateTime
+  coordinate_version  String    @db.VarChar(20)
+  coordinate_date     DateTime  @db.DateTime
+  error_model_version String    @db.VarChar(20)
+  error_model_date    DateTime  @db.DateTime
+  created_by          String?   @db.VarChar(80)
+  create_date         DateTime? @db.DateTime
+  comments            String?   @db.VarChar(500)
+  id_for_uniqueness   Int       @id(map: "PK__database__F064ED495B8BBA6A") @default(autoincrement())
+}
+
+model datums {
+  datums_id                                String        @id(map: "PK__datums__4BED5024369F92C7") @db.VarChar(80)
+  description                              String        @db.VarChar(80)
+  preferences_datumsTopreferences_coordref preferences[] @relation("datumsTopreferences_coordref")
+  preferences_datumsTopreferences_mdref    preferences[] @relation("datumsTopreferences_mdref")
+  preferences_datumsTopreferences_vdref    preferences[] @relation("datumsTopreferences_vdref")
+}
+
+model declination {
+  declination_id                                                                       String                       @id(map: "PK__declinat__B6993C54F58367C2") @db.VarChar(80)
+  declination_date                                                                     DateTime?                    @db.DateTime
+  facility_id                                                                          String?                      @db.VarChar(80)
+  slot_id                                                                              String?                      @db.VarChar(80)
+  plan_survey_subsection_id                                                            String?                      @db.VarChar(80)
+  source                                                                               String?                      @db.VarChar(80)
+  declination                                                                          Float?
+  dip                                                                                  Float?
+  field_strength                                                                       Float?
+  elevation                                                                            Float?
+  locked                                                                               String?                      @db.Char(1)
+  comments                                                                             String?                      @db.VarChar(2000)
+  user_specified                                                                       String                       @default("Y", map: "DF__declinati__user___477199F1") @db.Char(1)
+  geomagnetic_model_id                                                                 String?                      @db.VarChar(80)
+  geomagnetic_model_comment                                                            String?                      @db.VarChar(80)
+  wgs_from_cs_id                                                                       String?                      @db.VarChar(80)
+  wgs_from_latitude                                                                    Float?
+  wgs_from_longitude                                                                   Float?
+  wgs_to_latitude                                                                      Float?
+  wgs_to_longitude                                                                     Float?
+  facility_declination_facility_idTofacility                                           facility?                    @relation("declination_facility_idTofacility", fields: [facility_id], references: [facility_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_dec_facility_ID")
+  geomagnetic_model                                                                    geomagnetic_model?           @relation(fields: [geomagnetic_model_id], references: [geomagnetic_model_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_dec_geomagnetic_model_id")
+  plan_survey_subsection_declination_plan_survey_subsection_idToplan_survey_subsection plan_survey_subsection?      @relation("declination_plan_survey_subsection_idToplan_survey_subsection", fields: [plan_survey_subsection_id], references: [plan_survey_subsection_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_dec_subsection_id")
+  slot_declination_slot_idToslot                                                       slot?                        @relation("declination_slot_idToslot", fields: [slot_id], references: [slot_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_dec_slot_id")
+  projected_coordinate_system                                                          projected_coordinate_system? @relation(fields: [wgs_from_cs_id], references: [projected_coordinate_system_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_DEC_WGS_CS_ID")
+  facility_declinationTofacility_declination_id                                        facility[]                   @relation("declinationTofacility_declination_id")
+  plan_survey_subsection_declinationToplan_survey_subsection_declination_id            plan_survey_subsection[]     @relation("declinationToplan_survey_subsection_declination_id")
+  slot_declinationToslot_declination_id                                                slot[]                       @relation("declinationToslot_declination_id")
+}
+
+model drill_datum_elevation {
+  drill_datum_elevation_id                       String          @id(map: "PK__drill_da__3E7E6303CF780C8C") @db.VarChar(80)
+  slot_id                                        String?         @db.VarChar(80)
+  drill_datum_to_slotvd                          Float?
+  planned                                        String?         @db.Char(1)
+  rig_name                                       String          @db.VarChar(80)
+  rig_type_id                                    String?         @db.VarChar(80)
+  rig_datum_name_id                              String?         @db.VarChar(80)
+  default_course_length                          Float?
+  updated_by                                     String?         @db.VarChar(80)
+  update_date                                    DateTime?       @db.DateTime
+  comments                                       String?         @db.VarChar(80)
+  rig_datum_name                                 rig_datum_name? @relation(fields: [rig_datum_name_id], references: [rig_datum_name_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_DDE_rig_datum_name_id")
+  rig_type                                       rig_type?       @relation(fields: [rig_type_id], references: [rig_type_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_DDE_rig_type_id")
+  slot_drill_datum_elevation_slot_idToslot       slot?           @relation("drill_datum_elevation_slot_idToslot", fields: [slot_id], references: [slot_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_DDE_slot_id")
+  slot_drill_datum_elevationToslot_active_rig_id slot[]          @relation("drill_datum_elevationToslot_active_rig_id")
+  survey_log                                     survey_log[]
+}
+
+model ellipsoid {
+  ellipsoid_id                 String                         @id(map: "PK__ellipsoi__8E3D8EFCEAAFF5FA") @db.VarChar(80)
+  name                         String                         @unique(map: "UQ__ellipsoi__72E12F1BE8A29623") @db.VarChar(80)
+  semimajor_axis               Float?
+  semiminor_axis               Float?
+  geographic_coordinate_system geographic_coordinate_system[]
+}
+
+model error_term_type {
+  error_term_type_id String             @id(map: "PK__error_te__DC6BFDB7B58241AB") @db.VarChar(80)
+  name               String?            @db.VarChar(40)
+  description        String?            @db.VarChar(255)
+  units_id           String?            @db.VarChar(80)
+  depthwf            String?            @db.VarChar(120)
+  inclwf             String?            @db.VarChar(120)
+  aziwf              String?            @db.VarChar(120)
+  propagation_method String?            @db.Char(1)
+  units              units?             @relation(fields: [units_id], references: [units_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_ETT_units_id")
+  error_term_value   error_term_value[]
+  valid_error_term   valid_error_term[]
+}
+
+model error_term_value {
+  error_term_type_id String?          @db.VarChar(80)
+  tool_model_type_id String?          @db.VarChar(80)
+  correction_type_id String?          @db.VarChar(80)
+  datavalue          Float?
+  depthfactor        Float?
+  incfactor          Float?
+  azifactor          Float?
+  propagation_method String?          @db.Char(1)
+  id_for_uniqueness  Int              @id(map: "PK__error_te__F064ED49C64826D6") @default(autoincrement())
+  correction_type    correction_type? @relation(fields: [correction_type_id], references: [correction_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_ETV_correction_type_id")
+  error_term_type    error_term_type? @relation(fields: [error_term_type_id], references: [error_term_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_ETV_error_term_type_id")
+  tool_model_type    tool_model_type? @relation(fields: [tool_model_type_id], references: [tool_model_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_ETV_tool_model_type_id")
+}
+
+model extrapolation {
+  extrapolation_id                                                                 String               @id(map: "PK__extrapol__384F193F3929CB44") @db.VarChar(80)
+  extrapolate_method                                                               String               @default("N", map: "DF__extrapola__extra__60C757A0") @db.Char(1)
+  extrapolate_distance                                                             Float
+  extrapolate_build                                                                Float?
+  extrapolate_turn                                                                 Float?
+  extrapolate_dls                                                                  Float?
+  extrapolate_tf                                                                   Float?
+  extrapolate_inc                                                                  Float?
+  extrapolate_az                                                                   Float?
+  auto_clearance_log_auto_clearance_log_look_ahead_extrapolation_idToextrapolation auto_clearance_log[] @relation("auto_clearance_log_look_ahead_extrapolation_idToextrapolation")
+  auto_clearance_log_auto_clearance_log_to_bit_extrapolation_idToextrapolation     auto_clearance_log[] @relation("auto_clearance_log_to_bit_extrapolation_idToextrapolation")
+}
+
+model facility {
+  facility_id                                      String             @id(map: "PK__facility__B2E8EAAED5A96B6E") @db.VarChar(80)
+  name                                             String             @db.VarChar(80)
+  field_id                                         String?            @db.VarChar(80)
+  local_grid_name                                  String?            @db.VarChar(80)
+  horiz_datum_name                                 String?            @db.VarChar(80)
+  vert_datum_name                                  String?            @db.VarChar(80)
+  block_id                                         String?            @db.VarChar(80)
+  fcty_to_field_elevation                          Float?
+  declination_id                                   String?            @db.VarChar(80)
+  latitude                                         Float?
+  longitude                                        Float?
+  location_entry_type                              String?            @db.VarChar(11)
+  northing                                         Float?
+  easting                                          Float?
+  azireftrue                                       String?            @db.Char(1)
+  use_scale_factor                                 String?            @db.Char(1)
+  error_radius_lateral                             Float?
+  error_radius_vertical                            Float?
+  start_errors_at                                  String?            @db.VarChar(50)
+  fcty_to_mlelev                                   Float?
+  mud_line_yn                                      String?            @default("F", map: "DF__facility__mud_li__22401542") @db.Char(1)
+  updated_by                                       String?            @db.VarChar(80)
+  update_date                                      DateTime?          @db.DateTime
+  comments                                         String?            @db.VarChar(2000)
+  locked                                           String?            @db.Char(1)
+  block                                            block?             @relation(fields: [block_id], references: [block_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_fac_block_id")
+  declination_declinationTofacility_declination_id declination?       @relation("declinationTofacility_declination_id", fields: [declination_id], references: [declination_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_FAC_declination_id")
+  field                                            field?             @relation(fields: [field_id], references: [field_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_fac_Field_ID")
+  declination_declination_facility_idTofacility    declination[]      @relation("declination_facility_idTofacility")
+  provisional_path                                 provisional_path[]
+  slot                                             slot[]
+}
+
+model field {
+  field_id                                                 String                           @id(map: "PK__field__1BB6F43E2C6D696E") @db.VarChar(80)
+  name                                                     String                           @db.VarChar(80)
+  operator_id                                              String?                          @db.VarChar(80)
+  geographical_context_id                                  String                           @default("ARA1D1", map: "DF__field__geographi__72910220") @db.VarChar(80)
+  horiz_datum_name                                         String?                          @db.VarChar(80)
+  vert_datum_name                                          String?                          @db.VarChar(80)
+  coordinate_system_id                                     String?                          @db.VarChar(80)
+  location_entry_type                                      String?                          @db.VarChar(11)
+  preferences_id                                           String?                          @db.VarChar(80)
+  acrule_id                                                String?                          @db.VarChar(80)
+  latitude                                                 Float?
+  longitude                                                Float?
+  northing                                                 Float?
+  easting                                                  Float?
+  field_to_msl_elevation                                   Float?
+  azimuth_ref_true                                         String?                          @db.Char(1)
+  use_scale_factor                                         String?                          @db.Char(1)
+  error_radius_lateral                                     Float?
+  error_radius_vertical                                    Float?
+  mud_line_yn                                              String?                          @default("Y", map: "DF__field__mud_line___7849DB76") @db.Char(1)
+  override_opr_tem_sources                                 String?                          @db.Char(1)
+  updated_by                                               String?                          @db.VarChar(80)
+  update_date                                              DateTime?                        @db.DateTime
+  comments                                                 String?                          @db.VarChar(2000)
+  locked                                                   String?                          @db.Char(1)
+  primary_rigsite_bundle_id                                String?                          @db.VarChar(80)
+  primary_plan_bundle_id                                   String?                          @db.VarChar(80)
+  acrule                                                   acrule?                          @relation(fields: [acrule_id], references: [acrule_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_FLD_acrule_id")
+  projected_coordinate_system                              projected_coordinate_system?     @relation(fields: [coordinate_system_id], references: [projected_coordinate_system_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_field_projCS")
+  geographical_context                                     geographical_context             @relation(fields: [geographical_context_id], references: [geographical_context_id], onUpdate: NoAction, map: "FK_FLD_Geographical_Context_id")
+  operator                                                 operator?                        @relation(fields: [operator_id], references: [operator_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_FLD_Operator_id")
+  preferences                                              preferences?                     @relation(fields: [preferences_id], references: [preferences_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_FLD_preferences_id")
+  bundle_data_bundle_dataTofield_primary_plan_bundle_id    bundle_data?                     @relation("bundle_dataTofield_primary_plan_bundle_id", fields: [primary_plan_bundle_id], references: [bundle_data_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_FLD_bundle_plan_data_id")
+  bundle_data_bundle_dataTofield_primary_rigsite_bundle_id bundle_data?                     @relation("bundle_dataTofield_primary_rigsite_bundle_id", fields: [primary_rigsite_bundle_id], references: [bundle_data_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_FLD_bundle_rigsite_data_id")
+  acr_additional                                           acr_additional[]
+  bundle_data_bundle_data_field_idTofield                  bundle_data[]                    @relation("bundle_data_field_idTofield")
+  facility                                                 facility[]
+  provisional_path                                         provisional_path[]
+  target                                                   target[]
+  tem_field_source_exclude_prefs                           tem_field_source_exclude_prefs[]
+}
+
+model formation_tops {
+  formation_tops_id         String           @id(map: "PK__formatio__B9F4A207761375F4") @db.VarChar(80)
+  name                      String           @db.VarChar(80)
+  actual_wellbore_id        String?          @db.VarChar(80)
+  proposal_id               String?          @db.VarChar(80)
+  sequence                  Int
+  depth_location_entry_type String           @default("P", map: "DF__formation__depth__08D548FA") @db.Char(1)
+  depth                     Float
+  northing                  Float?
+  easting                   Float?
+  nlocal                    Float?
+  elocal                    Float?
+  latitude                  Float?
+  longitude                 Float?
+  dip                       Float?
+  dip_azimuth               Float?
+  color_rgb                 Int?
+  lithology                 String?          @db.VarChar(2000)
+  comments                  String?          @db.VarChar(2000)
+  updated_by                String?          @db.VarChar(80)
+  update_date               DateTime?        @db.DateTime
+  AWB                       actual_wellbore? @relation(fields: [actual_wellbore_id], references: [actual_wellbore_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_TOP_actual_wellbore_id")
+  proposal                  proposal?        @relation(fields: [proposal_id], references: [proposal_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_TOP_proposal_id")
+}
+
+model geographic_coordinate_system {
+  geographic_coordinate_system_id                                                                                       String                        @id(map: "PK_geographic_coordinate_system") @db.VarChar(80)
+  name                                                                                                                  String                        @db.VarChar(100)
+  ellipsoid_id                                                                                                          String                        @db.VarChar(80)
+  proj4_def                                                                                                             String                        @db.VarChar(255)
+  comments                                                                                                              String?                       @db.VarChar(2000)
+  epsg_code                                                                                                             Int?
+  ellipsoid                                                                                                             ellipsoid                     @relation(fields: [ellipsoid_id], references: [ellipsoid_id], onUpdate: NoAction, map: "FK_geographic_coordinate_system_ellipsoid")
+  projected_coordinate_system_geographic_coordinate_systemToprojected_coordinate_system_geographic_coordinate_system_id projected_coordinate_system[] @relation("geographic_coordinate_systemToprojected_coordinate_system_geographic_coordinate_system_id")
+  projected_coordinate_system_geographic_coordinate_systemToprojected_coordinate_system_reportas_geog_coord_system_id   projected_coordinate_system[] @relation("geographic_coordinate_systemToprojected_coordinate_system_reportas_geog_coord_system_id")
+  valid_geographic_transform_geographic_coordinate_systemTovalid_geographic_transform_a_geog_coord_system_id            valid_geographic_transform[]  @relation("geographic_coordinate_systemTovalid_geographic_transform_a_geog_coord_system_id")
+  valid_geographic_transform_geographic_coordinate_systemTovalid_geographic_transform_b_geog_coord_system_id            valid_geographic_transform[]  @relation("geographic_coordinate_systemTovalid_geographic_transform_b_geog_coord_system_id")
+}
+
+model geographical_context {
+  geographical_context_id String  @id(map: "PK__geograph__5E3729C698140B84") @db.VarChar(80)
+  name                    String  @unique(map: "UQ__geograph__72E12F1BC3180DE4") @db.VarChar(100)
+  block                   block[]
+  field                   field[]
+}
+
+model geomagnetic_model {
+  geomagnetic_model_id String        @id(map: "PK__geomagne__5E59F519B8387422") @db.VarChar(80)
+  name                 String?       @db.VarChar(80)
+  comments             String?       @db.VarChar(2000)
+  declination          declination[]
+  preferences          preferences[]
+}
+
+model invalid_correction_combo {
+  correction_type_id                                                                   String?          @db.VarChar(80)
+  invalid_correction_type_id                                                           String?          @db.VarChar(80)
+  id_for_uniqueness                                                                    Int              @id(map: "PK__invalid___F064ED49A6AA1821") @default(autoincrement())
+  correction_type_correction_typeToinvalid_correction_combo_correction_type_id         correction_type? @relation("correction_typeToinvalid_correction_combo_correction_type_id", fields: [correction_type_id], references: [correction_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_CTY_correction_type_id")
+  correction_type_correction_typeToinvalid_correction_combo_invalid_correction_type_id correction_type? @relation("correction_typeToinvalid_correction_combo_invalid_correction_type_id", fields: [invalid_correction_type_id], references: [correction_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_invalid_CTY_correction_type_id")
+}
+
+model next_column_id {
+  table_name String @id(map: "PK__next_col__B228A5BE95B1B0C3") @db.VarChar(80)
+  next_id    Int
+}
+
+model offset_rule_line {
+  offset_well_list_id String?           @db.VarChar(80)
+  line                String?           @db.VarChar(2000)
+  id_for_uniqueness   Int               @id(map: "PK__offset_r__F064ED49718201D9") @default(autoincrement())
+  offset_well_list    offset_well_list? @relation(fields: [offset_well_list_id], references: [offset_well_list_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_ORL_offset_well_list_id")
+}
+
+model offset_well_list {
+  offset_well_list_id                                     String                   @id(map: "PK__offset_w__023FF59837B3A39F") @db.VarChar(80)
+  name                                                    String                   @db.VarChar(160)
+  update_date                                             DateTime?                @db.DateTime
+  use_rule                                                String?                  @db.Char(1)
+  proposal_id                                             String?                  @db.VarChar(80)
+  actual_survey_program_id                                String?                  @db.VarChar(80)
+  uneditable                                              String?                  @default("N", map: "DF__offset_we__unedi__22FF2F51") @db.Char(1)
+  AWP_AWPTooffset_well_list_AWP_id                        actual_survey_program?   @relation("AWPTooffset_well_list_AWP_id", fields: [actual_survey_program_id], references: [actual_survey_program_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_OWL_actual_survey_program_id")
+  proposal_offset_well_list_proposal_idToproposal         proposal?                @relation("offset_well_list_proposal_idToproposal", fields: [proposal_id], references: [proposal_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_OWL_proposal_id")
+  AWP_AWP_offset_well_list_idTooffset_well_list           actual_survey_program[]  @relation("AWP_offset_well_list_idTooffset_well_list")
+  offset_rule_line                                        offset_rule_line[]
+  offset_well_list_entry                                  offset_well_list_entry[]
+  proposal_offset_well_listToproposal_offset_well_list_id proposal[]               @relation("offset_well_listToproposal_offset_well_list_id")
+}
+
+model offset_well_list_entry {
+  offset_well_list_id      String?                @db.VarChar(80)
+  proposal_id              String?                @db.VarChar(80)
+  actual_survey_program_id String?                @db.VarChar(80)
+  provisional_path_id      String?                @db.VarChar(80)
+  sequence                 Int
+  id_for_uniqueness        Int                    @id(map: "PK__offset_w__F064ED4912E239BB") @default(autoincrement())
+  AWP                      actual_survey_program? @relation(fields: [actual_survey_program_id], references: [actual_survey_program_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_OWE_actual_survey_program_id")
+  offset_well_list         offset_well_list?      @relation(fields: [offset_well_list_id], references: [offset_well_list_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_OWE_offset_well_list_id")
+  proposal                 proposal?              @relation(fields: [proposal_id], references: [proposal_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_OWE_proposal_id")
+  provisional_path         provisional_path?      @relation(fields: [provisional_path_id], references: [provisional_path_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_OWE_provisional_path_id")
+}
+
+model operator {
+  operator_id                                                 String                              @id(map: "PK__operator__9D9A8901A3D50461") @db.VarChar(80)
+  name                                                        String                              @unique(map: "UQ__operator__72E12F1B3FAF64A0") @db.VarChar(80)
+  logo                                                        String?                             @db.VarChar(2000)
+  preferences_id                                              String?                             @db.VarChar(80)
+  numsd                                                       Float?
+  acrule_id                                                   String?                             @db.VarChar(80)
+  confidence1d                                                Float?
+  confidence2d                                                Float?
+  confidence3d                                                Float?
+  updated_by                                                  String?                             @db.VarChar(80)
+  update_date                                                 DateTime?                           @db.DateTime
+  comments                                                    String?                             @db.VarChar(2000)
+  locked                                                      String?                             @db.Char(1)
+  primary_rigsite_bundle_id                                   String?                             @db.VarChar(80)
+  primary_plan_bundle_id                                      String?                             @db.VarChar(80)
+  acrule                                                      acrule?                             @relation(fields: [acrule_id], references: [acrule_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_OPR_acrule_id")
+  preferences                                                 preferences?                        @relation(fields: [preferences_id], references: [preferences_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_OPR_preferences_id")
+  bundle_data_bundle_dataTooperator_primary_plan_bundle_id    bundle_data?                        @relation("bundle_dataTooperator_primary_plan_bundle_id", fields: [primary_plan_bundle_id], references: [bundle_data_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_OPR_bundle_plan_data_id")
+  bundle_data_bundle_dataTooperator_primary_rigsite_bundle_id bundle_data?                        @relation("bundle_dataTooperator_primary_rigsite_bundle_id", fields: [primary_rigsite_bundle_id], references: [bundle_data_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_OPR_bundle_rigsite_data_id")
+  acr_additional                                              acr_additional[]
+  bundle_data_bundle_data_operator_idTooperator               bundle_data[]                       @relation("bundle_data_operator_idTooperator")
+  field                                                       field[]
+  tem_operator_source_exclude_prefs                           tem_operator_source_exclude_prefs[]
+}
+
+model plan_survey_program {
+  plan_survey_program_id                                          String                  @id(map: "PK__plan_sur__695CDF0005FAC50D") @db.VarChar(80)
+  proposal_id                                                     String?                 @db.VarChar(80)
+  updated_by                                                      String?                 @db.VarChar(80)
+  update_date                                                     DateTime?               @db.DateTime
+  proposal_plan_survey_program_proposal_idToproposal              proposal?               @relation("plan_survey_program_proposal_idToproposal", fields: [proposal_id], references: [proposal_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PSP_proposal_ID")
+  AWP                                                             actual_survey_program[]
+  plan_survey_section                                             plan_survey_section[]
+  proposal_plan_survey_programToproposal_def_plan_srvy_program_id proposal[]              @relation("plan_survey_programToproposal_def_plan_srvy_program_id")
+}
+
+model plan_survey_section {
+  plan_survey_section_id String                   @id(map: "PK__plan_sur__98F13F5047086BD2") @db.VarChar(80)
+  plan_survey_program_id String?                  @db.VarChar(80)
+  override_top_md        Float?
+  override_base_md       Float?
+  diameter               Float?
+  tool_model_id          String?                  @db.VarChar(80)
+  sequence               Int
+  plan_survey_program    plan_survey_program?     @relation(fields: [plan_survey_program_id], references: [plan_survey_program_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PSS_plan_survey_program_id")
+  tool_model             tool_model?              @relation(fields: [tool_model_id], references: [tool_model_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PSS_tool_model_id")
+  plan_survey_subsection plan_survey_subsection[]
+}
+
+model plan_survey_subsection {
+  plan_survey_subsection_id                                                 String               @id(map: "PK__plan_sur__645347FEBE82888E") @db.VarChar(80)
+  plan_survey_section_id                                                    String?              @db.VarChar(80)
+  top_md                                                                    Float
+  base_md                                                                   Float
+  declination_id                                                            String?              @db.VarChar(80)
+  convergence                                                               Float                @default(100000000000000000000, map: "DF__plan_surv__conve__31D75E8D")
+  course_length                                                             Float?
+  gravity_field                                                             Float?
+  calc_for_selection                                                        String               @default("M", map: "DF__plan_surv__calc___33BFA6FF") @db.Char(1)
+  calc_for_depth                                                            Float?
+  sequence                                                                  Int
+  comments                                                                  String?              @db.VarChar(80)
+  declination_declinationToplan_survey_subsection_declination_id            declination?         @relation("declinationToplan_survey_subsection_declination_id", fields: [declination_id], references: [declination_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PSU_DECLINATION")
+  plan_survey_section                                                       plan_survey_section? @relation(fields: [plan_survey_section_id], references: [plan_survey_section_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PSU_survey_subsection_id")
+  declination_declination_plan_survey_subsection_idToplan_survey_subsection declination[]        @relation("declination_plan_survey_subsection_idToplan_survey_subsection")
+}
+
+model plan_vs {
+  proposal_id  String    @unique(map: "UQ__plan_vs__A7BC641D36B0579F") @db.VarChar(80)
+  type         String    @db.Char(1)
+  start_at     String    @db.Char(1)
+  end_at       String    @db.Char(1)
+  start_elocal Float?
+  start_nlocal Float?
+  end_elocal   Float?
+  end_nlocal   Float?
+  azimuth      Float?
+  updated_by   String?   @db.VarChar(80)
+  update_date  DateTime? @db.DateTime
+  comments     String?   @db.VarChar(2000)
+  proposal     proposal  @relation(fields: [proposal_id], references: [proposal_id], onUpdate: NoAction, map: "DNF_FK_PVS_proposal_id")
+}
+
+model plan_wellbore {
+  plan_wellbore_id                                        String            @id(map: "PK__plan_wel__337F53CDC5DF3FDA") @db.VarChar(80)
+  name                                                    String            @db.VarChar(160)
+  well_header_id                                          String?           @db.VarChar(80)
+  definitive_proposal_id                                  String?           @db.VarChar(80)
+  tie_type                                                String            @db.Char(1)
+  tie_slot_id                                             String?           @db.VarChar(80)
+  tie_plan_wellbore_id                                    String?           @db.VarChar(80)
+  tie_actual_wellbore_id                                  String?           @db.VarChar(80)
+  tie_mdepth                                              Float?
+  tie_vdepth                                              Float?
+  tie_inclination                                         Float?
+  tie_azimuth                                             Float?
+  tie_elocal                                              Float?
+  tie_nlocal                                              Float?
+  well_status                                             String?           @db.Char(1)
+  updated_by                                              String?           @db.VarChar(80)
+  update_date                                             DateTime?         @db.DateTime
+  comments                                                String?           @db.VarChar(8000)
+  locked                                                  String?           @db.Char(1)
+  proposal_plan_wellbore_definitive_proposal_idToproposal proposal?         @relation("plan_wellbore_definitive_proposal_idToproposal", fields: [definitive_proposal_id], references: [proposal_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PWB_definitive_proposal_ID")
+  AWB_AWBToplan_wellbore_tie_AWB_id                       actual_wellbore?  @relation("AWBToplan_wellbore_tie_AWB_id", fields: [tie_actual_wellbore_id], references: [actual_wellbore_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PWB_tie_actual_wellbore_id")
+  plan_wellbore                                           plan_wellbore?    @relation("plan_wellboreToplan_wellbore_tie_plan_wellbore_id", fields: [tie_plan_wellbore_id], references: [plan_wellbore_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PWB_tie_plan_wellbore_id")
+  slot                                                    slot?             @relation(fields: [tie_slot_id], references: [slot_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PWB_tie_slot_id")
+  well_header                                             well_header?      @relation(fields: [well_header_id], references: [well_header_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PWB_Well_Header_ID")
+  AWB_AWB_fulfills_idToplan_wellbore                      actual_wellbore[] @relation("AWB_fulfills_idToplan_wellbore")
+  other_plan_wellbore                                     plan_wellbore[]   @relation("plan_wellboreToplan_wellbore_tie_plan_wellbore_id")
+  proposal_plan_wellboreToproposal_plan_wellbore_id       proposal[]        @relation("plan_wellboreToproposal_plan_wellbore_id")
+}
+
+model polygon {
+  polygon_id      String          @id(map: "PK__polygon__0B29D87FE414ABF0") @db.VarChar(80)
+  relative_coords String?         @db.Char(1)
+  polygon_point   polygon_point[]
+  target          target[]
+}
+
+model polygon_point {
+  polygon_id        String?  @db.VarChar(80)
+  x                 Float
+  y                 Float
+  point_index       Int
+  id_for_uniqueness Int      @id(map: "PK__polygon___F064ED49562C957B") @default(autoincrement())
+  polygon           polygon? @relation(fields: [polygon_id], references: [polygon_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_PLP_polygon_id")
+
+  @@unique([polygon_id, point_index], map: "polygon_point_unique")
+}
+
+model preferences {
+  preferences_id                                   String             @id(map: "PK__preferen__AB785541FBC1E9C4") @db.VarChar(80)
+  local_units_id                                   String?            @db.VarChar(80)
+  depth_units_id                                   String?            @db.VarChar(80)
+  diameter_units_id                                String?            @db.VarChar(80)
+  inclination_format                               String?            @db.Char(1)
+  azimuth_format                                   String?            @db.Char(1)
+  max_dls                                          Float?
+  dls_format                                       Int?
+  latlong_format                                   String?            @default("M", map: "DF__preferenc__latlo__1EA48E88") @db.Char(1)
+  report_surface_uncertainty                       String?            @db.Char(1)
+  plotting_units_id                                String?            @db.VarChar(80)
+  field_strength_units_id                          String?            @db.VarChar(80)
+  intersection_in_percent                          String?            @db.Char(1)
+  mdref                                            String?            @db.VarChar(80)
+  vdref                                            String?            @db.VarChar(80)
+  coordref                                         String?            @db.VarChar(80)
+  casing_width_in_decimal                          String?            @db.Char(1)
+  default_geomagnetic_model_id                     String?            @db.VarChar(80)
+  comments                                         String?            @db.VarChar(2000)
+  datums_datumsTopreferences_coordref              datums?            @relation("datumsTopreferences_coordref", fields: [coordref], references: [datums_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_PRF_CoordRef")
+  geomagnetic_model                                geomagnetic_model? @relation(fields: [default_geomagnetic_model_id], references: [geomagnetic_model_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_PRF_default_geomagnetic_model_id")
+  units_preferences_depth_units_idTounits          units?             @relation("preferences_depth_units_idTounits", fields: [depth_units_id], references: [units_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_PRF_depth_units_id")
+  units_preferences_diameter_units_idTounits       units?             @relation("preferences_diameter_units_idTounits", fields: [diameter_units_id], references: [units_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_PRF_diameter_units_id")
+  units_preferences_field_strength_units_idTounits units?             @relation("preferences_field_strength_units_idTounits", fields: [field_strength_units_id], references: [units_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_PRF_field_strength_units_id")
+  units_preferences_local_units_idTounits          units?             @relation("preferences_local_units_idTounits", fields: [local_units_id], references: [units_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_PRF_local_units_id")
+  datums_datumsTopreferences_mdref                 datums?            @relation("datumsTopreferences_mdref", fields: [mdref], references: [datums_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_PRF_mdref")
+  units_preferences_plotting_units_idTounits       units?             @relation("preferences_plotting_units_idTounits", fields: [plotting_units_id], references: [units_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_PRF_plotting_units_id")
+  datums_datumsTopreferences_vdref                 datums?            @relation("datumsTopreferences_vdref", fields: [vdref], references: [datums_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_PRF_vdref")
+  field                                            field[]
+  operator                                         operator[]
+}
+
+model privileges {
+  role               String @id(map: "PK__privileg__863D2149B609017E") @db.VarChar(80)
+  setup_data         Int?
+  paths              Int?
+  reference_data     Int?
+  system_data        Int?
+  users              Int?
+  databases          Int?
+  database_structure Int?
+}
+
+model profile_element {
+  proposal_section_id      String               @db.VarChar(80)
+  profile_element_type_id  String               @db.VarChar(80)
+  sequence                 Int
+  end_md                   Float?
+  end_md_cell_flag         String?              @db.Char(1)
+  inclination              Float?
+  inclination_cell_flag    String?              @db.Char(1)
+  azimuth                  Float?
+  azimuth_cell_flag        String?              @db.Char(1)
+  northing                 Float?
+  northing_cell_flag       String?              @db.Char(1)
+  easting                  Float?
+  easting_cell_flag        String?              @db.Char(1)
+  vdepth                   Float?
+  vdepth_cell_flag         String?              @db.Char(1)
+  dogleg                   Float?
+  dogleg_cell_flag         String?              @db.Char(1)
+  toolface                 Float?
+  toolface_cell_flag       String?              @db.Char(1)
+  polar_distance           Float?
+  polar_distance_cell_flag String?              @db.Char(1)
+  polar_bearing            Float?
+  polar_bearing_cell_flag  String?              @db.Char(1)
+  course_length            Float?
+  course_length_cell_flag  String?              @db.Char(1)
+  build                    Float?
+  build_cell_flag          String?              @db.Char(1)
+  turn                     Float?
+  turn_cell_flag           String?              @db.Char(1)
+  comments                 String?              @db.VarChar(2000)
+  comments_entered_by_user String?              @db.Char(1)
+  id_for_uniqueness        Int                  @id(map: "PK__profile___F064ED49D7BB2607") @default(autoincrement())
+  profile_element_type     profile_element_type @relation(fields: [profile_element_type_id], references: [profile_element_type_id], onUpdate: NoAction, map: "DNF_FK_PEE_profile_element_type_ID")
+  proposal_section         proposal_section     @relation(fields: [proposal_section_id], references: [proposal_section_id], onUpdate: NoAction, map: "DNF_FK_PEE_proposal_section_ID")
+}
+
+model profile_element_type {
+  profile_element_type_id String            @id(map: "PK__profile___A3A7CD69DB688CB0") @db.VarChar(80)
+  type                    String            @db.VarChar(80)
+  profile_element         profile_element[]
+}
+
+model projected_coordinate_system {
+  projected_coordinate_system_id                                                                                         String                        @id(map: "PK_projected_coordinate_system") @db.VarChar(80)
+  name                                                                                                                   String                        @db.VarChar(100)
+  projection_id                                                                                                          String                        @db.VarChar(80)
+  geographic_coordinate_system_id                                                                                        String                        @db.VarChar(80)
+  units_id                                                                                                               String                        @db.VarChar(80)
+  zone                                                                                                                   Int?
+  proj4_def                                                                                                              String                        @db.VarChar(255)
+  comments                                                                                                               String?                       @db.VarChar(2000)
+  reportas_geog_coord_system_id                                                                                          String?                       @db.VarChar(80)
+  south_lat                                                                                                              Float?
+  north_lat                                                                                                              Float?
+  east_lon                                                                                                               Float?
+  west_lon                                                                                                               Float?
+  epsg_code                                                                                                              Int?
+  geographic_coordinate_system_geographic_coordinate_systemToprojected_coordinate_system_geographic_coordinate_system_id geographic_coordinate_system  @relation("geographic_coordinate_systemToprojected_coordinate_system_geographic_coordinate_system_id", fields: [geographic_coordinate_system_id], references: [geographic_coordinate_system_id], onUpdate: NoAction, map: "FK_projected_coordinate_system_geographic_coordinate_system")
+  projection                                                                                                             projection                    @relation(fields: [projection_id], references: [projection_id], onUpdate: NoAction, map: "FK_projected_coordinate_system_projection")
+  geographic_coordinate_system_geographic_coordinate_systemToprojected_coordinate_system_reportas_geog_coord_system_id   geographic_coordinate_system? @relation("geographic_coordinate_systemToprojected_coordinate_system_reportas_geog_coord_system_id", fields: [reportas_geog_coord_system_id], references: [geographic_coordinate_system_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_reportas_projected_coordinate_system_geographic_coordinate_system")
+  declination                                                                                                            declination[]
+  field                                                                                                                  field[]
+}
+
+model projection {
+  projection_id               String                        @id(map: "PK__projecti__12F1E5D61F2D633D") @db.VarChar(80)
+  name                        String                        @unique(map: "UQ__projecti__72E12F1B29A147BD") @db.VarChar(80)
+  projected_coordinate_system projected_coordinate_system[]
+}
+
+model proposal {
+  proposal_id                                                                String                   @id(map: "PK__proposal__A7BC641C9F4D27E8") @db.VarChar(80)
+  name                                                                       String                   @db.VarChar(160)
+  plan_wellbore_id                                                           String?                  @db.VarChar(80)
+  revision_of_proposal_id                                                    String?                  @db.VarChar(80)
+  tie_type                                                                   String                   @db.Char(1)
+  tie_slot_id                                                                String?                  @db.VarChar(80)
+  tie_proposal_id                                                            String?                  @db.VarChar(80)
+  tie_actual_survey_program_id                                               String?                  @db.VarChar(80)
+  def_plan_srvy_program_id                                                   String?                  @db.VarChar(80)
+  tie_elocal                                                                 Float?
+  tie_nlocal                                                                 Float?
+  tie_mdepth                                                                 Float?
+  tie_vdepth                                                                 Float?
+  tie_inclination                                                            Float?
+  tie_azimuth                                                                Float?
+  tie_comments                                                               String?                  @db.VarChar(2000)
+  revision                                                                   String?                  @db.VarChar(80)
+  updated_by                                                                 String?                  @db.VarChar(80)
+  update_date                                                                DateTime?                @db.DateTime
+  time_stamp                                                                 DateTime?                @db.DateTime
+  invalid                                                                    String?                  @db.Char(1)
+  well_plan_project_id                                                       String?                  @db.VarChar(80)
+  offset_well_list_id                                                        String?                  @db.VarChar(80)
+  locked                                                                     String?                  @db.Char(1)
+  projection_md                                                              Float?
+  projection_tvd                                                             Float?
+  projection_dls                                                             Float?
+  projection_profile_line                                                    Int?
+  schematic_faces_file_name                                                  String?                  @db.VarChar(2000)
+  comments                                                                   String?                  @db.VarChar(8000)
+  plan_survey_program_plan_survey_programToproposal_def_plan_srvy_program_id plan_survey_program?     @relation("plan_survey_programToproposal_def_plan_srvy_program_id", fields: [def_plan_srvy_program_id], references: [plan_survey_program_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PLN_def_plan_srvy_program")
+  offset_well_list_offset_well_listToproposal_offset_well_list_id            offset_well_list?        @relation("offset_well_listToproposal_offset_well_list_id", fields: [offset_well_list_id], references: [offset_well_list_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PLN_OWL")
+  plan_wellbore_plan_wellboreToproposal_plan_wellbore_id                     plan_wellbore?           @relation("plan_wellboreToproposal_plan_wellbore_id", fields: [plan_wellbore_id], references: [plan_wellbore_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PLN_wellbore_id")
+  proposal_proposalToproposal_revision_of_proposal_id                        proposal?                @relation("proposalToproposal_revision_of_proposal_id", fields: [revision_of_proposal_id], references: [proposal_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PLN_revision_of")
+  AWP_AWPToproposal_tie_AWP_id                                               actual_survey_program?   @relation("AWPToproposal_tie_AWP_id", fields: [tie_actual_survey_program_id], references: [actual_survey_program_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PLN_tie_AWP")
+  proposal_proposalToproposal_tie_proposal_id                                proposal?                @relation("proposalToproposal_tie_proposal_id", fields: [tie_proposal_id], references: [proposal_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PLN_tie_proposal")
+  slot                                                                       slot?                    @relation(fields: [tie_slot_id], references: [slot_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PLN_tie_slot")
+  well_plan_project                                                          well_plan_project?       @relation(fields: [well_plan_project_id], references: [well_plan_project_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PLN_well_plan_project")
+  AWP_AWP_active_projection_idToproposal                                     actual_survey_program[]  @relation("AWP_active_projection_idToproposal")
+  actual_vs                                                                  actual_vs[]
+  casing                                                                     casing[]
+  formation_tops                                                             formation_tops[]
+  offset_well_list_offset_well_list_proposal_idToproposal                    offset_well_list[]       @relation("offset_well_list_proposal_idToproposal")
+  offset_well_list_entry                                                     offset_well_list_entry[]
+  plan_survey_program_plan_survey_program_proposal_idToproposal              plan_survey_program[]    @relation("plan_survey_program_proposal_idToproposal")
+  plan_vs                                                                    plan_vs?
+  plan_wellbore_plan_wellbore_definitive_proposal_idToproposal               plan_wellbore[]          @relation("plan_wellbore_definitive_proposal_idToproposal")
+  other_proposal_proposalToproposal_revision_of_proposal_id                  proposal[]               @relation("proposalToproposal_revision_of_proposal_id")
+  other_proposal_proposalToproposal_tie_proposal_id                          proposal[]               @relation("proposalToproposal_tie_proposal_id")
+  proposal_section                                                           proposal_section[]
+  wellpath_comment                                                           wellpath_comment[]
+  wellpath_target_list                                                       wellpath_target_list[]
+
+  @@unique([proposal_id, offset_well_list_id], map: "proposal_offsets_unique")
+}
+
+model proposal_section {
+  proposal_section_id      String                @id(map: "PK__proposal__2D7C4B5AB7ECB667") @db.VarChar(80)
+  proposal_section_type_id String                @db.VarChar(80)
+  proposal_id              String?               @db.VarChar(80)
+  target_id                String?               @db.VarChar(80)
+  sequence                 Int
+  proposal                 proposal?             @relation(fields: [proposal_id], references: [proposal_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_PRS_PWP_id")
+  proposal_section_type    proposal_section_type @relation(fields: [proposal_section_type_id], references: [proposal_section_type_id], onUpdate: NoAction, map: "DNF_FK_PRS_section_type")
+  target                   target?               @relation(fields: [target_id], references: [target_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PRS_target")
+  profile_element          profile_element[]
+}
+
+model proposal_section_type {
+  proposal_section_type_id String             @id(map: "PK__proposal__6BA72100F12498D1") @db.VarChar(80)
+  type                     String             @db.VarChar(80)
+  proposal_section         proposal_section[]
+}
+
+model provisional_path {
+  provisional_path_id      String                     @id(map: "PK__provisio__4CBB43331C208F07") @db.VarChar(80)
+  field_id                 String                     @db.VarChar(80)
+  facility_id              String?                    @db.VarChar(80)
+  path_code                String                     @db.VarChar(200)
+  path_alt_code            String?                    @db.VarChar(200)
+  original_data            String                     @db.Char(1)
+  location_type            String                     @db.VarChar(11)
+  z_above_msl              Float?
+  md_above_msl             Float?
+  tie_easting              Float
+  tie_northing             Float
+  tie_vdepth               Float
+  tie_mdepth               Float
+  tie_inclination          Float
+  tie_azimuth              Float
+  source                   String?                    @db.VarChar(200)
+  updated_by               String?                    @db.VarChar(80)
+  update_date              DateTime?                  @db.DateTime
+  facility                 facility?                  @relation(fields: [facility_id], references: [facility_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PPT_facility")
+  field                    field                      @relation(fields: [field_id], references: [field_id], onUpdate: NoAction, map: "FK_PPT_field")
+  offset_well_list_entry   offset_well_list_entry[]
+  provisional_path_station provisional_path_station[]
+}
+
+model provisional_path_station {
+  provisional_path_station_id String           @id(map: "PK__provisio__CD02D60A29F8EB15") @db.VarChar(80)
+  provisional_path_id         String           @db.VarChar(80)
+  easting                     Float
+  northing                    Float
+  vdepth                      Float
+  mdepth                      Float
+  inclination                 Float
+  azimuth                     Float
+  provisional_path            provisional_path @relation(fields: [provisional_path_id], references: [provisional_path_id], onUpdate: NoAction, map: "DNF_FK_PPS_path_id")
+}
+
+model rig_datum_name {
+  rig_datum_name_id     String                  @id(map: "PK__rig_datu__C39CEC7272DA0E75") @db.VarChar(80)
+  name                  String?                 @db.VarChar(80)
+  comments              String?                 @db.VarChar(80)
+  drill_datum_elevation drill_datum_elevation[]
+}
+
+model rig_type {
+  rig_type_id           String                  @id(map: "PK__rig_type__9A9FB10428AA8A47") @db.VarChar(80)
+  type                  String?                 @db.VarChar(80)
+  comments              String?                 @db.VarChar(80)
+  drill_datum_elevation drill_datum_elevation[]
+}
+
+model site_defaults {
+  site_id                                          String?          @db.VarChar(80)
+  default_tool_model_type_id                       String?          @db.VarChar(80)
+  contractor_name                                  String?          @db.VarChar(200)
+  contractor_logo                                  String?          @db.VarChar(1000)
+  contractor_color1                                Int?
+  contractor_color2                                Int?
+  contractor_color3                                Int?
+  default_acrule_id                                String?          @db.VarChar(80)
+  alternate_acrule_id                              String?          @db.VarChar(80)
+  database_directory                               String?          @db.VarChar(4000)
+  survey_mode                                      String           @default("F", map: "DF__site_defa__surve__0F183235") @db.Char(1)
+  id_for_uniqueness                                Int              @id(map: "PK__site_def__F064ED49BDD5458B") @default(autoincrement())
+  acrule_acruleTosite_defaults_alternate_acrule_id acrule?          @relation("acruleTosite_defaults_alternate_acrule_id", fields: [alternate_acrule_id], references: [acrule_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_DEF_alt_ACR")
+  acrule_acruleTosite_defaults_default_acrule_id   acrule?          @relation("acruleTosite_defaults_default_acrule_id", fields: [default_acrule_id], references: [acrule_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_DEF_default_ACR")
+  tool_model_type                                  tool_model_type? @relation(fields: [default_tool_model_type_id], references: [tool_model_type_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_DEF_default_tool_model_type")
+}
+
+model slot {
+  slot_id                                                         String                  @id(map: "PK__slot__971A01BB09E8B7C9") @db.VarChar(80)
+  name                                                            String                  @db.VarChar(80)
+  facility_id                                                     String?                 @db.VarChar(80)
+  active_rig_id                                                   String?                 @db.VarChar(80)
+  location_entry_type                                             String?                 @db.VarChar(20)
+  declination_id                                                  String?                 @db.VarChar(80)
+  latitude                                                        Float?
+  longitude                                                       Float?
+  northing                                                        Float?
+  easting                                                         Float?
+  elocal                                                          Float?
+  nlocal                                                          Float?
+  slot_to_fcty_elevation                                          Float?
+  fcty_ml_to_slot_ml                                              Float?
+  error_radius_lateral                                            Float?
+  error_radius_vertical                                           Float?
+  override_error_start                                            String?                 @db.Char(1)
+  override_fcty_declination                                       String?                 @db.Char(1)
+  start_errors_at                                                 String?                 @db.VarChar(50)
+  start_errors_depth                                              Float?
+  updated_by                                                      String?                 @db.VarChar(80)
+  update_date                                                     DateTime?               @db.DateTime
+  comments                                                        String?                 @db.VarChar(2000)
+  locked                                                          String?                 @db.Char(1)
+  drill_datum_elevation_drill_datum_elevationToslot_active_rig_id drill_datum_elevation?  @relation("drill_datum_elevationToslot_active_rig_id", fields: [active_rig_id], references: [drill_datum_elevation_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_SLT_active_rig_id")
+  declination_declinationToslot_declination_id                    declination?            @relation("declinationToslot_declination_id", fields: [declination_id], references: [declination_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_SLT_declination_id")
+  facility                                                        facility?               @relation(fields: [facility_id], references: [facility_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_SLT_facility")
+  AWP                                                             actual_survey_program[]
+  AWB                                                             actual_wellbore[]
+  declination_declination_slot_idToslot                           declination[]           @relation("declination_slot_idToslot")
+  drill_datum_elevation_drill_datum_elevation_slot_idToslot       drill_datum_elevation[] @relation("drill_datum_elevation_slot_idToslot")
+  plan_wellbore                                                   plan_wellbore[]
+  proposal                                                        proposal[]
+  well_header                                                     well_header[]
+}
+
+model survey_log {
+  survey_log_id            String                  @id(map: "PK__survey_l__251CDA0D2DF453E5") @db.VarChar(80)
+  name                     String                  @db.VarChar(200)
+  survey_date              DateTime?               @db.DateTime
+  actual_wellbore_id       String?                 @db.VarChar(80)
+  tool_model_id            String?                 @db.VarChar(80)
+  drill_datum_elevation_id String?                 @db.VarChar(80)
+  comments                 String?                 @db.VarChar(2000)
+  updated_by               String?                 @db.VarChar(80)
+  update_date              DateTime?               @db.DateTime
+  locked                   String?                 @db.Char(1)
+  AWB                      actual_wellbore?        @relation(fields: [actual_wellbore_id], references: [actual_wellbore_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_LOG_AWB")
+  drill_datum_elevation    drill_datum_elevation?  @relation(fields: [drill_datum_elevation_id], references: [drill_datum_elevation_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_LOG_drill_datum")
+  tool_model               tool_model?             @relation(fields: [tool_model_id], references: [tool_model_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_LOG_tool_model")
+  actual_survey_section    actual_survey_section[]
+  survey_station           survey_station[]
+}
+
+model survey_station {
+  survey_station_id String     @id(map: "PK__survey_s__0E43496D3FD6DD8D") @db.VarChar(80)
+  survey_log_id     String     @db.VarChar(80)
+  md                Float?
+  survey_date       DateTime?  @db.DateTime
+  inclination       Float?
+  azimuth           Float?
+  northing          Float?
+  easting           Float?
+  vd                Float?
+  comments          String?    @db.VarChar(80)
+  survey_log        survey_log @relation(fields: [survey_log_id], references: [survey_log_id], onUpdate: NoAction, map: "DNF_FK_STN_survey_log_id")
+
+  @@index([survey_log_id, md], map: "IX_survey_station")
+}
+
+model surveying_type {
+  surveying_type_id String            @id(map: "PK__surveyin__CA4ADF32877E4AFB") @db.VarChar(80)
+  name              String            @db.VarChar(200)
+  tool_model_type   tool_model_type[]
+}
+
+model target {
+  target_id            String                 @id(map: "PK__target__57D3816EAEBE7A4A") @db.VarChar(80)
+  name                 String                 @db.VarChar(80)
+  target_type          String                 @db.Char(1)
+  latitude             Float?
+  longitude            Float?
+  northing             Float?
+  easting              Float?
+  vdepth               Float?
+  location_entry_type  String?                @db.VarChar(20)
+  vdepth_entry_type    String?                @db.VarChar(20)
+  field_id             String?                @db.VarChar(80)
+  polygon_id           String?                @db.VarChar(80)
+  dip                  Float?
+  azimuth              Float?
+  offset_x             Float?
+  offset_y             Float?
+  radius_one           Float?
+  radius_two           Float?
+  width                Float?
+  height               Float?
+  angle                Float?
+  projected_vertical   String?                @db.Char(1)
+  is_3d                String?                @db.Char(1)
+  thickness_above      Float?
+  thickness_below      Float?
+  offset_to_cutline    Float?
+  azimuth_to_cutline   Float?
+  comments             String?                @db.VarChar(2000)
+  updated_by           String?                @db.VarChar(80)
+  update_date          DateTime?              @db.DateTime
+  locked               String?                @db.Char(1)
+  field                field?                 @relation(fields: [field_id], references: [field_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_TGT_field")
+  polygon              polygon?               @relation(fields: [polygon_id], references: [polygon_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_TGT_polygon")
+  proposal_section     proposal_section[]
+  wellpath_target_list wellpath_target_list[]
+}
+
+model tem_field_source_exclude_prefs {
+  field_id          String? @db.VarChar(80)
+  source            String? @db.VarChar(40)
+  id_for_uniqueness Int     @id(map: "PK__tem_fiel__F064ED49BABF5A09") @default(autoincrement())
+  field             field?  @relation(fields: [field_id], references: [field_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_TSP_field_id")
+}
+
+model tem_operator_source_exclude_prefs {
+  operator_id       String?   @db.VarChar(80)
+  source            String?   @db.VarChar(40)
+  id_for_uniqueness Int       @id(map: "PK__tem_oper__F064ED495754C3E1") @default(autoincrement())
+  operator          operator? @relation(fields: [operator_id], references: [operator_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_TSP_operator_id")
+}
+
+model template_data {
+  template_data_id  String             @id(map: "PK__template__DE773A1A7724AF79") @db.VarChar(80)
+  template_rpt_type String             @db.Char(1)
+  output_type       String             @db.Char(1)
+  name              String             @db.VarChar(80)
+  updated_by        String?            @db.VarChar(80)
+  update_date       DateTime?          @db.DateTime
+  system_yn         String             @db.Char(1)
+  data_string       String             @db.VarChar(2000)
+  comments          String?            @db.VarChar(80)
+  bundled_template  bundled_template[]
+}
+
+model tool_model {
+  tool_model_id                                                     String                  @id(map: "PK__tool_mod__F4871D48A473ACF7") @db.VarChar(80)
+  tool_model_type_id                                                String?                 @db.VarChar(80)
+  name                                                              String                  @db.VarChar(200)
+  description                                                       String?                 @db.VarChar(2000)
+  author                                                            String?                 @db.VarChar(80)
+  system_yn                                                         String                  @db.Char(1)
+  replacement_id                                                    String?                 @db.VarChar(80)
+  create_date                                                       DateTime?               @default(now(), map: "DF__tool_mode__creat__062DE679") @db.DateTime
+  use_when                                                          String?                 @default("A", map: "DF__tool_mode__use_w__08162EEB") @db.Char(1)
+  tool_model_type_tool_model_tool_model_type_idTotool_model_type    tool_model_type?        @relation("tool_model_tool_model_type_idTotool_model_type", fields: [tool_model_type_id], references: [tool_model_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__tool_mode__tool___04459E07")
+  assigned_correction                                               assigned_correction[]
+  auto_clearance_log                                                auto_clearance_log[]
+  cone_error_parameters                                             cone_error_parameters[]
+  plan_survey_section                                               plan_survey_section[]
+  survey_log                                                        survey_log[]
+  tool_model_type_tool_modelTotool_model_type_default_tool_model_id tool_model_type[]       @relation("tool_modelTotool_model_type_default_tool_model_id")
+}
+
+model tool_model_type {
+  tool_model_type_id                                           String                 @id(map: "PK__tool_mod__9582B993802ABF1A") @db.VarChar(80)
+  name                                                         String                 @db.VarChar(200)
+  short_name                                                   String?                @db.VarChar(80)
+  surveying_type_id                                            String                 @default("SVT1B6", map: "DF__tool_mode__surve__473C8FC7") @db.VarChar(80)
+  default_tool_model_id                                        String?                @db.VarChar(80)
+  description                                                  String?                @db.VarChar(2000)
+  confidential                                                 String?                @default("N", map: "DF__tool_mode__confi__4A18FC72") @db.Char(1)
+  model_type                                                   String?                @db.Char(1)
+  name_abbrev                                                  String?                @db.VarChar(40)
+  obsolete                                                     String                 @default("N", map: "DF__tool_mode__obsol__4CF5691D") @db.Char(1)
+  source                                                       String?                @db.VarChar(40)
+  revision                                                     String?                @db.VarChar(40)
+  update_date                                                  DateTime?              @default(now(), map: "DF__tool_mode__updat__4DE98D56") @db.DateTime
+  update_by                                                    String?                @default("user_name()", map: "DF__tool_mode__updat__4EDDB18F") @db.VarChar(80)
+  tool_model_tool_modelTotool_model_type_default_tool_model_id tool_model?            @relation("tool_modelTotool_model_type_default_tool_model_id", fields: [default_tool_model_id], references: [tool_model_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_TMT_default_tool_model_id")
+  surveying_type                                               surveying_type         @relation(fields: [surveying_type_id], references: [surveying_type_id], onUpdate: NoAction, map: "FK_TMT_surveying_type_id")
+  error_term_value                                             error_term_value[]
+  site_defaults                                                site_defaults[]
+  tool_model_tool_model_tool_model_type_idTotool_model_type    tool_model[]           @relation("tool_model_tool_model_type_idTotool_model_type")
+  tool_parameter_value                                         tool_parameter_value[]
+  valid_correction                                             valid_correction[]
+  valid_error_term                                             valid_error_term[]
+  valid_tool_parameter                                         valid_tool_parameter[]
+}
+
+model tool_parameter_type {
+  tool_parameter_type_id String                 @id(map: "PK__tool_par__C423231E8559C967") @db.VarChar(80)
+  name                   String?                @db.VarChar(80)
+  description            String?                @db.VarChar(2000)
+  units_id               String?                @db.VarChar(80)
+  units                  units?                 @relation(fields: [units_id], references: [units_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__tool_para__units__269AB60B")
+  tool_parameter_value   tool_parameter_value[]
+  valid_tool_parameter   valid_tool_parameter[]
+}
+
+model tool_parameter_value {
+  tool_parameter_type_id String?              @db.VarChar(80)
+  tool_model_type_id     String?              @db.VarChar(80)
+  correction_type_id     String?              @db.VarChar(80)
+  parameter_value        Float?
+  id_for_uniqueness      Int                  @id(map: "PK__tool_par__F064ED497CD799E7") @default(autoincrement())
+  correction_type        correction_type?     @relation(fields: [correction_type_id], references: [correction_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__tool_para__corre__2A6B46EF")
+  tool_model_type        tool_model_type?     @relation(fields: [tool_model_type_id], references: [tool_model_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__tool_para__tool___297722B6")
+  tool_parameter_type    tool_parameter_type? @relation(fields: [tool_parameter_type_id], references: [tool_parameter_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__tool_para__tool___2882FE7D")
+}
+
+model units {
+  units_id                                               String                @id(map: "PK__units__E2E453459044EE4D") @db.VarChar(80)
+  unit                                                   String                @unique(map: "UQ__units__7B45D0E1ECB324CF") @db.VarChar(40)
+  comments                                               String?               @db.VarChar(100)
+  error_term_type                                        error_term_type[]
+  preferences_preferences_depth_units_idTounits          preferences[]         @relation("preferences_depth_units_idTounits")
+  preferences_preferences_diameter_units_idTounits       preferences[]         @relation("preferences_diameter_units_idTounits")
+  preferences_preferences_field_strength_units_idTounits preferences[]         @relation("preferences_field_strength_units_idTounits")
+  preferences_preferences_local_units_idTounits          preferences[]         @relation("preferences_local_units_idTounits")
+  preferences_preferences_plotting_units_idTounits       preferences[]         @relation("preferences_plotting_units_idTounits")
+  tool_parameter_type                                    tool_parameter_type[]
+}
+
+model valid_correction {
+  tool_model_type_id  String?           @db.VarChar(80)
+  correction_group_id String?           @db.VarChar(80)
+  id_for_uniqueness   Int               @id(map: "PK__valid_co__F064ED49093AB6C6") @default(autoincrement())
+  correction_group    correction_group? @relation(fields: [correction_group_id], references: [correction_group_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_VCR_correction_group")
+  tool_model_type     tool_model_type?  @relation(fields: [tool_model_type_id], references: [tool_model_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_VCR_tool_model_type")
+}
+
+model valid_error_term {
+  tool_model_type_id String?          @db.VarChar(80)
+  error_term_type_id String?          @db.VarChar(80)
+  id_for_uniqueness  Int              @id(map: "PK__valid_er__F064ED49C6458B9F") @default(autoincrement())
+  error_term_type    error_term_type? @relation(fields: [error_term_type_id], references: [error_term_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_VET_error_term_type")
+  tool_model_type    tool_model_type? @relation(fields: [tool_model_type_id], references: [tool_model_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_VET_tool_model_type")
+}
+
+model valid_geographic_transform {
+  valid_geographic_transform_id                                                                                String                       @id(map: "PK_valid_geographic_transform") @db.VarChar(80)
+  name                                                                                                         String                       @db.VarChar(255)
+  a_geog_coord_system_id                                                                                       String                       @db.VarChar(80)
+  b_geog_coord_system_id                                                                                       String                       @db.VarChar(80)
+  geographic_coordinate_system_geographic_coordinate_systemTovalid_geographic_transform_a_geog_coord_system_id geographic_coordinate_system @relation("geographic_coordinate_systemTovalid_geographic_transform_a_geog_coord_system_id", fields: [a_geog_coord_system_id], references: [geographic_coordinate_system_id], onUpdate: NoAction, map: "FK_avalid_geographic_transform_geographic_coordinate_system")
+  geographic_coordinate_system_geographic_coordinate_systemTovalid_geographic_transform_b_geog_coord_system_id geographic_coordinate_system @relation("geographic_coordinate_systemTovalid_geographic_transform_b_geog_coord_system_id", fields: [b_geog_coord_system_id], references: [geographic_coordinate_system_id], onUpdate: NoAction, map: "FK_bvalid_geographic_transform_geographic_coordinate_system")
+}
+
+model valid_tool_parameter {
+  tool_parameter_type_id String?              @db.VarChar(80)
+  tool_model_type_id     String?              @db.VarChar(80)
+  id_for_uniqueness      Int                  @id(map: "PK__valid_to__F064ED492AC786E0") @default(autoincrement())
+  tool_model_type        tool_model_type?     @relation(fields: [tool_model_type_id], references: [tool_model_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__valid_too__tool___39AD8A7F")
+  tool_parameter_type    tool_parameter_type? @relation(fields: [tool_parameter_type_id], references: [tool_parameter_type_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__valid_too__tool___38B96646")
+}
+
+model well_header {
+  well_header_id String            @id(map: "PK__well_hea__BB94355A7642EF93") @db.VarChar(80)
+  name           String            @db.VarChar(100)
+  legal_name     String?           @db.VarChar(100)
+  slot_id        String?           @db.VarChar(80)
+  well_type      String?           @db.Char(1)
+  updated_by     String?           @db.VarChar(80)
+  update_date    DateTime?         @db.DateTime
+  api_number     String?           @db.VarChar(40)
+  comments       String?           @db.VarChar(2000)
+  locked         String?           @db.Char(1)
+  slot           slot?             @relation(fields: [slot_id], references: [slot_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_HDR_slot")
+  AWB            actual_wellbore[]
+  plan_wellbore  plan_wellbore[]
+}
+
+model well_plan_project {
+  well_plan_project_id            String     @id(map: "PK__well_pla__AB0E70107E38FFCB") @db.VarChar(80)
+  interp_int1                     Float?
+  interp_int2                     Float?
+  interp_int3                     Float?
+  display_options                 String?    @db.VarChar(20)
+  faces_file_name                 String?    @db.VarChar(1000)
+  sequence_file_name              String?    @db.VarChar(1000)
+  model_elv_above_MSL             Float?
+  max_dls                         Float?
+  trav_cyl_radius                 Float?
+  faces_file_created_on_em_tab    String?    @db.Char(1)
+  earthmodel_wellpath_tube_radius Float?
+  earthmodel_display_type         String?    @db.Char(1)
+  proposal                        proposal[]
+}
+
+model wellpath_comment {
+  wellpath_comment_id      String                 @id(map: "PK__wellpath__AF9EFBC449E39900") @db.VarChar(80)
+  actual_survey_program_id String?                @db.VarChar(80)
+  proposal_id              String?                @db.VarChar(80)
+  md                       Float?
+  vd                       Float?
+  comments                 String?                @db.VarChar(200)
+  AWP                      actual_survey_program? @relation(fields: [actual_survey_program_id], references: [actual_survey_program_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_AWP_AWP_id")
+  proposal                 proposal?              @relation(fields: [proposal_id], references: [proposal_id], onDelete: NoAction, onUpdate: NoAction, map: "DNF_FK_AWP_proposal_id")
+}
+
+model wellpath_target_list {
+  proposal_id String   @db.VarChar(80)
+  target_id   String   @db.VarChar(80)
+  proposal    proposal @relation(fields: [proposal_id], references: [proposal_id], onUpdate: NoAction, map: "DNF_FK_WTL_proposal_id")
+  target      target   @relation(fields: [target_id], references: [target_id], onUpdate: NoAction, map: "FK_WTL_target_id")
+
+  @@unique([proposal_id, target_id], map: "wellpath_target_list_unique")
+}
